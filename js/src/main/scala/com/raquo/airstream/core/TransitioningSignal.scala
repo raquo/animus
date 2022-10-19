@@ -17,6 +17,8 @@ class TransitioningSignal[Input, Output, Key](
     with SingleParentObservable[Seq[Input], Seq[Output]]
     with InternalNextErrorObserver[Seq[Input]] {
 
+  println("xxx TransitioningSignal")
+
   override protected[this] def initialValue: Try[Seq[Output]] = parent.tryNow().map(memoizedProject(_, true))
 
   override protected[airstream] val topoRank: Int = 1

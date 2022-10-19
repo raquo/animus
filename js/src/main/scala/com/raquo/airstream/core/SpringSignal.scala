@@ -11,6 +11,8 @@ class SpringSignal[A](override protected val parent: Signal[(A, Option[A])])(imp
     with WritableSignal[A]
     with SingleParentObservable[(A, Option[A]), A] {
 
+  println("xxx SpringSignal")
+
   private var anim: animatable.Anim = _
   private var animating             = false
 
