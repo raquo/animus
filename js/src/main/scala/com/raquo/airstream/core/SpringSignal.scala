@@ -48,11 +48,13 @@ class SpringSignal[A](override protected val parent: Signal[(A, Option[A])])(imp
     value.map { case (a, s) => s getOrElse a }
   }
 
-  override protected[airstream] val topoRank: Int = Protected.topoRank(parent) + 1
+  override protected[airstream] val topoRank: Int = 1
 
   def fireQuick(value: A): Unit = {
-    externalObservers.foreach(_.onNext(value))
-    internalObservers.foreach(InternalObserver.onNext(_, value, null))
+    new Transaction({ trx =>
+      externalObservers.foreach(_.onNext(value))
+      internalObservers.foreach(InternalObserver.onNext(_, value, trx))
+    })
   }
 
   override protected[airstream] def onNext(nextValue: (A, Option[A]), transaction: Transaction): Unit = {
@@ -66,5 +68,5 @@ class SpringSignal[A](override protected val parent: Signal[(A, Option[A])])(imp
   override protected[airstream] def onError(nextError: Throwable, transaction: Transaction): Unit = ()
 
   override protected[airstream] def onTry(nextValue: Try[(A, Option[A])], transaction: Transaction): Unit =
-    nextValue.foreach(onNext(_, null))
+    nextValue.foreach(onNext(_, transaction))
 }
