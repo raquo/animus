@@ -1,6 +1,6 @@
 package com.raquo.airstream.core
 
-import animus.{OrderedSet, Transition, TransitionSet, TransitionStatus}
+import animus.{OrderedSet, Transition, TransitionStatus}
 import com.raquo.airstream.common.{InternalNextErrorObserver, SingleParentObservable}
 import com.raquo.airstream.state.Var
 
@@ -42,8 +42,6 @@ class TransitioningSignal[Input, Output, Key](
   override protected[airstream] def onError(nextError: Throwable, transaction: Transaction): Unit = {
     fireError(nextError, transaction)
   }
-
-  var transitionSet: TransitionSet[Input, Input] = TransitionSet.empty[Input]
 
   private[this] def memoizedProject(nextInputs: Seq[Input], first: Boolean = false): Seq[Output] = {
     val nextKeysDict = mutable.HashSet.empty[Key] // HashSet has desirable performance tradeoffs
