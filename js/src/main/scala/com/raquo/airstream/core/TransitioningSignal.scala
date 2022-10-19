@@ -19,7 +19,7 @@ class TransitioningSignal[Input, Output, Key](
 
   override protected[this] def initialValue: Try[Seq[Output]] = parent.tryNow().map(memoizedProject(_, true))
 
-  override protected[airstream] val topoRank: Int = Protected.topoRank(parent) + 1
+  override protected[airstream] val topoRank: Int = 1
 
   private[this] val timeoutHandles: mutable.Map[Key, SetTimeoutHandle]                      = mutable.Map.empty
   private[this] val memoized: mutable.Map[Key, (Output, Var[Input], Var[TransitionStatus])] = mutable.Map.empty
@@ -34,10 +34,10 @@ class TransitioningSignal[Input, Output, Key](
   }
 
   override protected[airstream] def onNext(nextInputs: Seq[Input], transaction: Transaction): Unit = {
-    fireValue(memoizedProject(nextInputs), transaction)
+    new Transaction(trx => fireValue(memoizedProject(nextInputs), trx))
   }
 
-  def refireMemoized(): Unit = fireValue(ordered.toList.map(memoized(_)._1), null)
+  def refireMemoized(): Unit = new Transaction(trx => fireValue(ordered.toList.map(memoized(_)._1), trx))
 
   override protected[airstream] def onError(nextError: Throwable, transaction: Transaction): Unit = {
     fireError(nextError, transaction)
