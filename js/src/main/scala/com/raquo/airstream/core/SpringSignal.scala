@@ -67,8 +67,14 @@ class SpringSignal[A](override protected val parent: Signal[(A, Option[A])])(imp
     }
   }
 
-  override protected[airstream] def onError(nextError: Throwable, transaction: Transaction): Unit = ()
+  override protected[airstream] def onError(nextError: Throwable, transaction: Transaction): Unit = {
+    new Transaction({ trx =>
+      externalObservers.foreach(_.onError(nextError))
+      internalObservers.foreach(InternalObserver.onError(_, nextError, trx))
+    })
+  }
+
 
   override protected[airstream] def onTry(nextValue: Try[(A, Option[A])], transaction: Transaction): Unit =
-    nextValue.foreach(onNext(_, transaction))
+    nextValue.fold(onError(_, transaction), onNext(_, transaction))
 }
